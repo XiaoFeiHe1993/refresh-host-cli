@@ -1,6 +1,6 @@
 {
   "name": "refresh-host-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "refresh-host-cli",
   "main": "index.js",
   "engines": {
@@ -22,7 +22,6 @@
     "axios": "^0.19.2",
     "btoa": "^1.2.1",
     "chalk": "^1.1.1",
-    "colors": "^1.1.2",
     "commander": "^5.1.0",
     "dotenv": "^8.2.0",
     "inquirer": "^7.1.0",

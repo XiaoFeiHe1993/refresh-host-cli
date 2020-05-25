@@ -2,12 +2,12 @@
 
 const pkg = require('./package.json')
 const program = require('commander')
-const colors = require('colors')
 const chalk = require('chalk')
-const path = require('path')
 const axios = require('axios')
 const inquirer = require('inquirer')
 const fs = require('fs')
+
+const WIN32_HOST_PATH = 'C:\\windows\\System32\\drivers\\etc\\hosts.txt'
 
 let localStorage = null
 if (typeof localStorage === 'undefined' || localStorage === null) {
@@ -22,12 +22,12 @@ const ask = () => {
   prompts.push({
     type: 'input',
     name: 'hostKey',
-    message: 'please input host key',
+    message: '请输入域名缩写名',
   })
   prompts.push({
     type: 'input',
     name: 'hostValue',
-    message: 'please input host value',
+    message: '请输入域名',
   })
   return inquirer.prompt(prompts)
 }
@@ -54,9 +54,8 @@ const select = () => {
 }
 
 program
-  .alias('a')
   .command('add')
-  .description('add url to host file')
+  .description('添加域名到host文件')
   .action(() => {
     ask().then((answers) => {
       localStorage.setItem(answers.hostKey, answers.hostValue)
@@ -66,9 +65,8 @@ program
   })
 
 program
-  .alias('u')
   .command('use')
-  .description('select url to host file')
+  .description('选择域名')
   .action(() => {
     select().then((answers) => {
       getIp(answers.host.hostKey, answers.host.hostValue)
@@ -76,9 +74,8 @@ program
   })
 
 program
-  .alias('ls')
   .command('list')
-  .description('list host url')
+  .description('查看已存在的域名解析')
   .action(() => {
     for (let i = 0; i < localStorage.length; i++) {
       console.log(chalk.green(`${localStorage.key(i)}: ${localStorage.getItem(localStorage.key(i))}`))
@@ -86,12 +83,11 @@ program
   })
 
 program
-  .alias('lk')
   .command('look')
-  .description('look host file')
+  .description('查看host文件')
   .action(() => {
     if (process.platform === 'win32') {
-      fs.readFile('C:\\windows\\System32\\drivers\\etc\\hosts.txt', function (err, data) {
+      fs.readFile(WIN32_HOST_PATH, function (err, data) {
         if (err) {
           return console.error(err)
         }
@@ -102,7 +98,6 @@ program
 
 // 解析域名得到ip
 const getIp = (hostKey, hostValue) => {
-  // 解析域名得到对应ip
   axios({
     headers: {
       'Content-Type': 'application/json',
@@ -128,10 +123,10 @@ const getIp = (hostKey, hostValue) => {
 // 保存ip到host文件
 const saveIp = (ip, host, key) => {
   if (process.platform !== 'win32') {
-    console.log(chalk.red('it only support win32 os.'))
+    console.log(chalk.red('只支持win32系统'))
     return
   }
-  fs.readFile('C:\\windows\\System32\\drivers\\etc\\hosts.txt', function (err, data) {
+  fs.readFile(WIN32_HOST_PATH, function (err, data) {
     if (err) {
       return console.error(err)
     }
@@ -143,9 +138,9 @@ const saveIp = (ip, host, key) => {
       result += `\n\n#${key} start\n${ip} ${host}\n#${key} end\n`
     }
 
-    fs.writeFile('C:\\windows\\System32\\drivers\\etc\\hosts.txt', result, 'UTF-8', function (err) {
+    fs.writeFile(WIN32_HOST_PATH, result, 'UTF-8', function (err) {
       if (err) {
-        console.log('写文件出错了：' + err)
+        console.log('写域名解析到host文件出错：' + err)
       }
     })
   })
