@@ -32,6 +32,27 @@ const ask = () => {
   return inquirer.prompt(prompts)
 }
 
+const select = () => {
+  const prompts = []
+  const templateChoices = []
+  for (let i = 0; i < localStorage.length; i++) {
+    templateChoices.push({
+      name: localStorage.key(i),
+      value: {
+        hostKey: localStorage.key(i),
+        hostValue: localStorage.getItem(localStorage.key(i)),
+      },
+    })
+  }
+  prompts.push({
+    type: 'list',
+    name: 'host',
+    message: '请选择域名',
+    choices: templateChoices,
+  })
+  return inquirer.prompt(prompts)
+}
+
 program
   .alias('a')
   .command('add')
@@ -40,27 +61,17 @@ program
     ask().then((answers) => {
       localStorage.setItem(answers.hostKey, answers.hostValue)
 
-      // 解析域名得到对应ip
-      axios({
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'get',
-        url: `http://119.29.29.29/d?dn=${answers.hostValue}`,
-        data: {},
-      })
-        .then((res) => {
-          console.log(chalk.green(res.data))
-          if (res.data) {
-            let ip = res.data.split(';')[0]
+      getIp(answers.hostKey, answers.hostValue)
+    })
+  })
 
-            // 保存ip、域名到host文件
-            saveIp(ip, answers.hostValue, answers.hostKey)
-          }
-        })
-        .catch((error) => {
-          console.log(chalk.red(error.message))
-        })
+program
+  .alias('u')
+  .command('use')
+  .description('select url to host file')
+  .action(() => {
+    select().then((answers) => {
+      getIp(answers.host.hostKey, answers.host.hostValue)
     })
   })
 
@@ -89,7 +100,37 @@ program
     }
   })
 
+// 解析域名得到ip
+const getIp = (hostKey, hostValue) => {
+  // 解析域名得到对应ip
+  axios({
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    method: 'get',
+    url: `http://119.29.29.29/d?dn=${hostValue}`,
+    data: {},
+  })
+    .then((res) => {
+      console.log(chalk.green(res.data))
+      if (res.data) {
+        let ip = res.data.split(';')[0]
+
+        // 保存ip、域名到host文件
+        saveIp(ip, hostValue, hostKey)
+      }
+    })
+    .catch((error) => {
+      console.log(chalk.red(error.message))
+    })
+}
+
+// 保存ip到host文件
 const saveIp = (ip, host, key) => {
+  if (process.platform !== 'win32') {
+    console.log(chalk.red('it only support win32 os.'))
+    return
+  }
   fs.readFile('C:\\windows\\System32\\drivers\\etc\\hosts.txt', function (err, data) {
     if (err) {
       return console.error(err)
@@ -97,7 +138,7 @@ const saveIp = (ip, host, key) => {
     let result = data.toString()
     if (result.indexOf(host) > -1) {
       let reg = new RegExp(`#${key}[\\s\\S]*?#${key} end`, 'g')
-      result = result.replace(reg, `#${key} start\n${ip} ${host}\n#${key} end\n`)
+      result = result.replace(reg, `#${key} start\n${ip} ${host}\n#${key} end`)
     } else {
       result += `\n\n#${key} start\n${ip} ${host}\n#${key} end\n`
     }
