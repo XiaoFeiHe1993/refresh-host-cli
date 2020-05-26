@@ -1,6 +1,6 @@
 {
   "name": "refresh-host-cli",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "refresh-host-cli",
   "main": "index.js",
   "engines": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/rolandnsharp/resume-cli.git"
+    "url": "https://github.com/XiaoFeiHe1993/refresh-host-cli.git"
   },
   "license": "MIT",
   "bin": {
