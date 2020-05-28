@@ -7,16 +7,16 @@ const axios = require('axios')
 const inquirer = require('inquirer')
 const fs = require('fs')
 
-let WIN32_HOST_PATH = null
+let OS_HOST_PATH = null
 
 if (fs.existsSync('C:\\windows\\System32\\drivers\\etc\\hosts.txt')) {
-  WIN32_HOST_PATH = 'C:\\windows\\System32\\drivers\\etc\\hosts.txt'
+  OS_HOST_PATH = 'C:\\windows\\System32\\drivers\\etc\\hosts.txt'
 } else if (fs.existsSync('C:\\windows\\System32\\drivers\\etc\\hosts')) {
-  WIN32_HOST_PATH = 'C:\\windows\\System32\\drivers\\etc\\hosts'
-} else if (fs.existsSync('/private/etc/hosts')) {
-  WIN32_HOST_PATH = '/private/etc/hosts'
-} else if (fs.existsSync('/private/etc/hosts.txt')) {
-  WIN32_HOST_PATH = '/private/etc/hosts.txt'
+  OS_HOST_PATH = 'C:\\windows\\System32\\drivers\\etc\\hosts'
+} else if (fs.existsSync('/etc/hosts.txt')) {
+  OS_HOST_PATH = '/etc/hosts.txt'
+} else if (fs.existsSync('/etc/hosts')) {
+  OS_HOST_PATH = '/etc/hosts'
 }
 
 let localStorage = null
@@ -96,16 +96,12 @@ program
   .command('look')
   .description('查看host文件')
   .action(() => {
-    if (process.platform === 'win32' || process.platform === 'darwin') {
-      fs.readFile(WIN32_HOST_PATH, function (err, data) {
-        if (err) {
-          return console.error(err)
-        }
-        console.log(chalk.green(data.toString()))
-      })
-    } else {
-      console.log(chalk.red('只支持window、mac系统'))
-    }
+    fs.readFile(OS_HOST_PATH, function (err, data) {
+      if (err) {
+        return console.error(err)
+      }
+      console.log(chalk.green(data.toString()))
+    })
   })
 
 // 解析域名得到ip
@@ -134,11 +130,7 @@ const getIp = (hostKey, hostValue) => {
 
 // 保存ip到host文件
 const saveIp = (ip, host, key) => {
-  if (process.platform !== 'win32' && process.platform !== 'darwin') {
-    console.log(chalk.red('只支持window、mac系统'))
-    return
-  }
-  fs.readFile(WIN32_HOST_PATH, function (err, data) {
+  fs.readFile(OS_HOST_PATH, function (err, data) {
     if (err) {
       return console.error(err)
     }
@@ -150,7 +142,7 @@ const saveIp = (ip, host, key) => {
       result += `\n\n#${key} start\n${ip} ${host}\n#${key} end\n`
     }
 
-    fs.writeFile(WIN32_HOST_PATH, result, 'UTF-8', function (err) {
+    fs.writeFile(OS_HOST_PATH, result, 'UTF-8', function (err) {
       if (err) {
         console.log('写域名解析到host文件出错：' + err)
       }
