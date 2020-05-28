@@ -13,6 +13,10 @@ if (fs.existsSync('C:\\windows\\System32\\drivers\\etc\\hosts.txt')) {
   WIN32_HOST_PATH = 'C:\\windows\\System32\\drivers\\etc\\hosts.txt'
 } else if (fs.existsSync('C:\\windows\\System32\\drivers\\etc\\hosts')) {
   WIN32_HOST_PATH = 'C:\\windows\\System32\\drivers\\etc\\hosts'
+} else if (fs.existsSync('/private/etc/hosts')) {
+  WIN32_HOST_PATH = '/private/etc/hosts'
+} else if (fs.existsSync('/private/etc/hosts.txt')) {
+  WIN32_HOST_PATH = '/private/etc/hosts.txt'
 }
 
 let localStorage = null
@@ -92,7 +96,7 @@ program
   .command('look')
   .description('查看host文件')
   .action(() => {
-    if (process.platform === 'win32') {
+    if (process.platform === 'win32' || process.platform === 'darwin') {
       fs.readFile(WIN32_HOST_PATH, function (err, data) {
         if (err) {
           return console.error(err)
@@ -100,7 +104,7 @@ program
         console.log(chalk.green(data.toString()))
       })
     } else {
-      console.log(chalk.red('只支持window系统'))
+      console.log(chalk.red('只支持window、mac系统'))
     }
   })
 
@@ -130,8 +134,8 @@ const getIp = (hostKey, hostValue) => {
 
 // 保存ip到host文件
 const saveIp = (ip, host, key) => {
-  if (process.platform !== 'win32') {
-    console.log(chalk.red('只支持window系统'))
+  if (process.platform !== 'win32' && process.platform !== 'darwin') {
+    console.log(chalk.red('只支持window、mac系统'))
     return
   }
   fs.readFile(WIN32_HOST_PATH, function (err, data) {
