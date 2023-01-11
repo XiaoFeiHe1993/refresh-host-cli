@@ -28,6 +28,6 @@
     "node-localstorage": "^2.1.6"
   },
   "devDependencies": {
-    "mocha": "^3.0.2"
+    "mocha": "^10.2.0"
   }
 }
